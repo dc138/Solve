@@ -198,12 +198,15 @@ fn main() {
         std::process::exit(1);
     }
 
-    let expr = env::args()
+    let expr: String = env::args()
         .skip(1)
         .fold(String::new(), |mut partial, current| {
             partial.push_str(&current);
             partial
-        });
+        })
+        .chars()
+        .filter(|c: &char| c != &' ')
+        .collect();
 
     match evaluate(&expr, &expr, 0) {
         Ok(res) => {
