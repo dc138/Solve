@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 phf = { version = "0.10", features = ["macros"] }
+debug_print = "1.0.0"

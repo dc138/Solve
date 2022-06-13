@@ -1,3 +1,4 @@
+use debug_print::{debug_print as dprint, debug_println as dprintln};
 use phf::phf_map;
 use std::env;
 use std::fmt;
@@ -43,7 +44,7 @@ static OPERATORS: phf::Map<char, usize> = phf_map! {
 };
 
 fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxError> {
-    print!("parse {} with ctx {} at {}: ", expr, full_expr, offset);
+    dprint!("parse {} with ctx {} at {}: ", expr, full_expr, offset);
 
     if expr.chars().filter(|c: &char| *c == ' ').count() == expr.len() {
         return Err(SyntaxError::new(
@@ -59,7 +60,7 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
 
     if first_char == '"' && last_char == '"' {
         let inner = &expr[1..expr.len() - 1];
-        println!("unwrap into {}", inner);
+        dprintln!("unwrap into {}", inner);
         return evaluate(inner, full_expr, offset + 1);
     } else if first_char == '(' {
         let mut i: usize = 0;
@@ -81,7 +82,7 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
 
         if i == expr.len() - 1 {
             let inner = &expr[1..expr.len() - 1];
-            println!("unwrap into {}", inner);
+            dprintln!("unwrap into {}", inner);
             return evaluate(inner, full_expr, offset + 1);
         }
     }
@@ -126,14 +127,14 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
 
     if split_char == ' ' {
         if let Ok(val) = expr.parse::<f64>() {
-            println!("float");
+            dprintln!("float");
             return Ok(val);
         }
     } else {
         let left = &expr[..split_pos];
         let right = &expr[split_pos + 1..];
 
-        println!("{} {} {}", left, split_char, right);
+        dprintln!("{} {} {}", left, split_char, right);
 
         let left = if left.is_empty() {
             if split_char == '+' || split_char == '-' {
@@ -154,7 +155,7 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
             Err(SyntaxError::new(
                 expr.to_owned(),
                 full_expr.to_owned(),
-                format!("expected token after {} operator", split_char),
+                format!("expected token after operator {}", split_char),
                 offset + expr.len(),
             ))
         } else {
