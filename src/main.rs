@@ -1,6 +1,7 @@
 use debug_print::{debug_print as dprint, debug_println as dprintln};
 use phf::phf_map;
 use std::env;
+use std::f64;
 use std::fmt;
 
 #[derive(Debug)]
@@ -41,6 +42,11 @@ static OPERATORS: phf::Map<char, usize> = phf_map! {
     '*' => 2,
     '/' => 2,
     '^' => 1,
+};
+
+static CONSTANTS: phf::Map<&str, f64> = phf_map! {
+    "pi" => f64::consts::PI,
+    "e" => f64::consts::E,
 };
 
 fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxError> {
@@ -129,6 +135,8 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
         if let Ok(val) = expr.parse::<f64>() {
             dprintln!("float");
             return Ok(val);
+        } else if CONSTANTS.contains_key(&expr) {
+            return Ok(*CONSTANTS.get(&expr).unwrap());
         } else {
             return Err(SyntaxError::new(
                 expr.to_owned(),
@@ -174,7 +182,11 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
             '-' => Ok(left - right),
             '*' => Ok(left * right),
             '/' => Ok(left / right),
-            '^' => Ok(f64::powf(left, right)),
+            '^' => Ok(if (left + right) < f64::EPSILON {
+                f64::NAN
+            } else {
+                f64::powf(left, right)
+            }),
             _ => panic!("reached unexpected code block"),
         };
     }
