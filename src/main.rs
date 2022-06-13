@@ -129,6 +129,13 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
         if let Ok(val) = expr.parse::<f64>() {
             dprintln!("float");
             return Ok(val);
+        } else {
+            return Err(SyntaxError::new(
+                expr.to_owned(),
+                full_expr.to_owned(),
+                "unkown token".to_owned(),
+                offset + expr.len(),
+            ));
         }
     } else {
         let left = &expr[..split_pos];
@@ -171,8 +178,6 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
             _ => panic!("reached unexpected code block"),
         };
     }
-
-    panic!("reached unexpected code block");
 }
 
 fn main() {
