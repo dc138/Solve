@@ -73,26 +73,36 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
         return evaluate(inner, full_expr, offset + 1);
     } else if first_char == '(' {
         let mut i: usize = 0;
-        let mut par_level: isize = 1;
+        let mut par_level: isize = 0;
 
         'dowhile: loop {
-            i += 1;
-
             par_level += match expr.chars().nth(i).unwrap() {
                 '(' => 1,
                 ')' => -1,
                 _ => 0,
             };
 
-            if par_level == 0 || i > expr.len() {
+            i += 1;
+
+            if par_level == 0 {
+                break 'dowhile;
+            } else if i == expr.len() {
+                i = 0;
                 break 'dowhile;
             }
         }
 
-        if i == expr.len() - 1 {
+        if i == expr.len() {
             let inner = &expr[1..expr.len() - 1];
             dprintln!("unwrap into {}", inner);
             return evaluate(inner, full_expr, offset + 1);
+        } else if i == 0 {
+            return Err(SyntaxError::new(
+                expr.to_owned(),
+                full_expr.to_owned(),
+                "missing closing parenthesis".to_owned(),
+                offset + expr.len(),
+            ));
         }
     }
 
@@ -139,6 +149,7 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
             dprintln!("float");
             return Ok(val);
         } else if CONSTANTS.contains_key(&expr) {
+            dprintln!("math constant");
             return Ok(*CONSTANTS.get(&expr).unwrap());
         } else {
             return Err(SyntaxError::new(
