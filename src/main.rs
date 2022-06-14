@@ -4,6 +4,8 @@ use std::env;
 use std::f64;
 use std::fmt;
 
+mod math;
+
 #[derive(Debug)]
 struct SyntaxError {
     expression: String,
@@ -42,6 +44,7 @@ static OPERATORS: phf::Map<char, usize> = phf_map! {
     '*' => 2,
     '/' => 2,
     '^' => 1,
+    '!' => 0,
 };
 
 static CONSTANTS: phf::Map<&str, f64> = phf_map! {
@@ -167,12 +170,16 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
         }?;
 
         let right = if right.is_empty() {
-            Err(SyntaxError::new(
-                expr.to_owned(),
-                full_expr.to_owned(),
-                format!("expected token after operator {}", split_char),
-                offset + expr.len(),
-            ))
+            if split_char == '!' {
+                Ok(0.)
+            } else {
+                Err(SyntaxError::new(
+                    expr.to_owned(),
+                    full_expr.to_owned(),
+                    format!("expected token after operator {}", split_char),
+                    offset + expr.len(),
+                ))
+            }
         } else {
             evaluate(right, full_expr, offset + split_pos + 1)
         }?;
@@ -187,6 +194,7 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
             } else {
                 f64::powf(left, right)
             }),
+            '!' => Ok(math::fact(left)),
             _ => panic!("reached unexpected code block"),
         };
     }
