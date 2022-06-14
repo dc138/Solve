@@ -184,3 +184,135 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
         };
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_float_simple() {
+        let expr: &str = "1";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 1.);
+
+        let expr: &str = "-5";
+        assert_eq!(parse(expr, expr, 0).unwrap(), -5.);
+    }
+
+    #[test]
+    fn parse_float_decimals() {
+        let expr: &str = "1.";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 1.0);
+
+        let expr: &str = ".1";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 0.1);
+
+        let expr: &str = "1.1";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 1.1);
+    }
+
+    #[test]
+    fn parse_float_nan() {
+        let expr: &str = "nan";
+        assert!(parse(expr, expr, 0).unwrap().is_nan());
+    }
+
+    #[test]
+    fn parse_float_inf() {
+        let expr: &str = "inf";
+        assert!(parse(expr, expr, 0).unwrap().is_infinite());
+    }
+
+    #[test]
+    fn parse_operator_sum() {
+        let expr: &str = "5+3";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 8.);
+    }
+
+    #[test]
+    fn parse_operator_difference() {
+        let expr: &str = "1-1";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 0.);
+    }
+
+    #[test]
+    fn parse_operator_product() {
+        let expr: &str = "2*4";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 8.);
+    }
+
+    #[test]
+    fn parse_operator_quotient() {
+        let expr: &str = "10/2";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 5.);
+    }
+
+    #[test]
+    fn parse_operator_exponent() {
+        let expr: &str = "2^2";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 4.);
+    }
+
+    #[test]
+    fn parse_operator_precedence() {
+        let expr: &str = "1+2*3";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 7.);
+
+        let expr: &str = "2*3-1";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 5.);
+
+        let expr: &str = "1+4/2";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 3.);
+
+        let expr: &str = "1^2/4";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 0.25);
+    }
+
+    #[test]
+    fn parse_implicit_operators() {
+        let expr: &str = "2*-2";
+        assert_eq!(parse(expr, expr, 0).unwrap(), -4.);
+
+        let expr: &str = "1--1";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 2.);
+
+        let expr: &str = "-1*-1";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 1.);
+    }
+
+    #[test]
+    fn parse_unwrap_quotes() {
+        let expr: &str = "\"10-10\"";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 0.);
+    }
+    #[test]
+    fn parse_unwrap_parenthesis_simple() {
+        let expr: &str = "(1+1)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 2.);
+    }
+    #[test]
+    fn parse_unwrap_parenthesis_nested() {
+        let expr: &str = "(((1)+1)+(1+(1)))";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 4.);
+
+        let expr: &str = "(1+(1+(1+(1+(1+(1+(1)))))))";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 7.);
+    }
+
+    #[test]
+    fn parse_unwrap_parenthesis_missing_closing() {
+        let expr: &str = "(1+1";
+        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"(1+1\" in expression \"(1+1\": missing closing parenthesis, (1+1 <-- HERE");
+
+        let expr: &str = "(1+(1)";
+        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"(1+(1)\" in expression \"(1+(1)\": missing closing parenthesis, (1+(1) <-- HERE");
+    }
+
+    #[test]
+    fn parse_unwrap_parenthesis_missing_opening() {
+        let expr: &str = "1+1)";
+        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"1)\" in expression \"1+1)\": missing opening parenthesis, 1+1) <-- HERE");
+
+        let expr: &str = "(1+1))";
+        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"(1+1))\" in expression \"(1+1))\": missing opening parenthesis, (1+1)) <-- HERE");
+    }
+}

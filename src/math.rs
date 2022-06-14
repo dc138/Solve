@@ -63,7 +63,7 @@ fn fact_int(x: u64) -> f64 {
 pub fn fact(x: f64) -> f64 {
     return if x < 0. {
         f64::NAN
-    } else if x - x.trunc() < std::f64::EPSILON {
+    } else if (x - x.trunc()).abs() < std::f64::EPSILON {
         fact_int(x.round() as u64)
     } else {
         gamma(x + 1.)
