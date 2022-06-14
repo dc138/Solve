@@ -151,6 +151,13 @@ fn evaluate(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxErr
         } else if CONSTANTS.contains_key(&expr) {
             dprintln!("math constant");
             return Ok(*CONSTANTS.get(&expr).unwrap());
+        } else if last_char == ')' {
+            return Err(SyntaxError::new(
+                expr.to_owned(),
+                full_expr.to_owned(),
+                "missing opening parenthesis".to_owned(),
+                offset + expr.len(),
+            ));
         } else {
             return Err(SyntaxError::new(
                 expr.to_owned(),
