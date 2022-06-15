@@ -69,3 +69,35 @@ pub fn fact(x: f64) -> f64 {
         gamma(x + 1.)
     };
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fact_negative() {
+        assert!(fact(-1.).is_nan());
+        assert!(fact(-0.1).is_nan());
+        assert!(fact(-2.5).is_nan());
+    }
+
+    #[test]
+    fn fact_zero() {
+        assert_eq!(fact(0.), 1.);
+    }
+
+    #[test]
+    fn fact_positive_integer() {
+        assert_eq!(fact(1.), 1.);
+        assert_eq!(fact(2.), 2.);
+        assert_eq!(fact(3.), 6.);
+        assert_eq!(fact(4.), 24.);
+        assert_eq!(fact(5.), 120.);
+    }
+
+    #[test]
+    fn fact_positive_rational() {
+        assert!((fact(2.5) - 3.3233509704478403).abs() < f64::EPSILON);
+        assert!((fact(3.5) - 11.631728396567521).abs() < f64::EPSILON);
+    }
+}
