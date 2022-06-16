@@ -3,6 +3,7 @@ use phf::phf_map;
 use std::f64;
 
 use crate::errors::*;
+use crate::helpers::*;
 use crate::math;
 
 static OPERATORS: phf::Map<char, usize> = phf_map! {
@@ -118,6 +119,9 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
         } else if CONSTANTS.contains_key(&expr) {
             dprintln!("math constant");
             return Ok(*CONSTANTS.get(&expr).unwrap());
+        } else if is_function_call(expr) {
+            dprintln!("function call");
+            unimplemented!();
         } else if last_char == ')' {
             return Err(SyntaxError::new(
                 expr.to_owned(),

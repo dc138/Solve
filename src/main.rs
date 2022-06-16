@@ -1,6 +1,7 @@
 use std::env;
 
 mod errors;
+mod helpers;
 mod math;
 mod parser;
 
