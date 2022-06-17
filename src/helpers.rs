@@ -34,6 +34,27 @@ pub fn is_function_call(expr: &str) -> Option<(&str, &str, usize)> {
     None
 }
 
+#[macro_export]
+macro_rules! assert_parse_result_float {
+    ($x:expr, $y:expr) => {
+        assert!((parse($x, $x, 0).unwrap() - $y).abs() < f64::EPSILON);
+    };
+}
+
+#[macro_export]
+macro_rules! assert_parse_result_is {
+    ($x:expr, $y:ident) => {
+        assert!((parse($x, $x, 0).unwrap().$y()));
+    };
+}
+
+#[macro_export]
+macro_rules! assert_parse_error {
+    ($x:expr, $y:expr) => {
+        assert_eq!(format!("{}", parse($x, $x, 0).expect_err("")), $y);
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

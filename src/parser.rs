@@ -92,8 +92,10 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
             continue;
         } else if OPERATORS.contains_key(&c)
             && !((c == '+' || c == '-')
-                && (i != 0 && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap()))) && ((OPERATORS.get(&c).unwrap() >= &split_precedence && split_char != ' ')
-                || split_char == ' ') {
+                && (i != 0 && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap())))
+            && ((OPERATORS.get(&c).unwrap() >= &split_precedence && split_char != ' ')
+                || split_char == ' ')
+        {
             split_char = c;
             split_pos = i;
             split_precedence = *OPERATORS.get(&c).unwrap();
@@ -111,18 +113,16 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
             dprintln!("function call: {} {}", name, args);
 
             match FUNCTIONS.get(name) {
-                Some(1) => {
-                    match name {
-                        "cos" => Ok(parse(args, full_expr, pos + 1)?.cos()),
-                        "sin" => Ok(parse(args, full_expr, pos + 1)?.sin()),
-                        "tan" => Ok(parse(args, full_expr, pos + 1)?.tan()),
-                        "acos" => Ok(parse(args, full_expr, pos + 1)?.acos()),
-                        "asin" => Ok(parse(args, full_expr, pos + 1)?.asin()),
-                        "atan" => Ok(parse(args, full_expr, pos + 1)?.atan()),
-                        "ln" => Ok(parse(args, full_expr, pos + 1)?.ln()),
-                        _ => unreachable!(),
-                    }
-                }
+                Some(1) => match name {
+                    "cos" => Ok(parse(args, full_expr, pos + 1)?.cos()),
+                    "sin" => Ok(parse(args, full_expr, pos + 1)?.sin()),
+                    "tan" => Ok(parse(args, full_expr, pos + 1)?.tan()),
+                    "acos" => Ok(parse(args, full_expr, pos + 1)?.acos()),
+                    "asin" => Ok(parse(args, full_expr, pos + 1)?.asin()),
+                    "atan" => Ok(parse(args, full_expr, pos + 1)?.atan()),
+                    "ln" => Ok(parse(args, full_expr, pos + 1)?.ln()),
+                    _ => unreachable!(),
+                },
                 Some(_) => {
                     unreachable!();
                 }
@@ -208,194 +208,140 @@ mod tests {
 
     #[test]
     fn parse_unkown_token() {
-        let expr: &str = "error";
-        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"error\" in expression \"error\": unkown token, error <-- HERE");
+        assert_parse_error!("error", "error while parsing token \"error\" in expression \"error\": unkown token, error <-- HERE");
     }
 
     #[test]
     fn parse_float_simple() {
-        let expr: &str = "1";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 1.);
-
-        let expr: &str = "-5";
-        assert_eq!(parse(expr, expr, 0).unwrap(), -5.);
+        assert_parse_result_float!("1", 1.0);
+        assert_parse_result_float!("-5", -5.0);
     }
 
     #[test]
     fn parse_float_decimals() {
-        let expr: &str = "1.";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 1.0);
-
-        let expr: &str = ".1";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 0.1);
-
-        let expr: &str = "1.1";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 1.1);
+        assert_parse_result_float!("1.", 1.0);
+        assert_parse_result_float!(".1", 0.1);
+        assert_parse_result_float!("1.1", 1.1);
     }
 
     #[test]
     fn parse_float_nan() {
-        let expr: &str = "nan";
-        assert!(parse(expr, expr, 0).unwrap().is_nan());
+        assert_parse_result_is!("nan", is_nan);
     }
 
     #[test]
     fn parse_float_inf() {
-        let expr: &str = "inf";
-        assert!(parse(expr, expr, 0).unwrap().is_infinite());
+        assert_parse_result_is!("inf", is_infinite);
     }
 
     #[test]
     fn parse_operator_sum() {
-        let expr: &str = "5+3";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 8.);
+        assert_parse_result_float!("5+3", 8.);
     }
 
     #[test]
     fn parse_operator_difference() {
-        let expr: &str = "1-1";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 0.);
+        assert_parse_result_float!("1-1", 0.);
     }
 
     #[test]
     fn parse_operator_product() {
-        let expr: &str = "2*4";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 8.);
+        assert_parse_result_float!("2*4", 8.);
     }
 
     #[test]
     fn parse_operator_quotient() {
-        let expr: &str = "10/2";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 5.);
+        assert_parse_result_float!("10/2", 5.);
     }
 
     #[test]
     fn parse_operator_exponent() {
-        let expr: &str = "2^2";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 4.);
+        assert_parse_result_float!("2^2", 4.);
     }
 
     #[test]
     fn parse_operator_precedence() {
-        let expr: &str = "1+2*3";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 7.);
-
-        let expr: &str = "2*3-1";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 5.);
-
-        let expr: &str = "1+4/2";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 3.);
-
-        let expr: &str = "1^2/4";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 0.25);
+        assert_parse_result_float!("1+2*3", 7.);
+        assert_parse_result_float!("2*3-1", 5.);
+        assert_parse_result_float!("1+4/2", 3.);
+        assert_parse_result_float!("1^2/4", 0.25);
     }
 
     #[test]
     fn parse_implicit_operators() {
-        let expr: &str = "2*-2";
-        assert_eq!(parse(expr, expr, 0).unwrap(), -4.);
-
-        let expr: &str = "1--1";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 2.);
-
-        let expr: &str = "-1*-1";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 1.);
+        assert_parse_result_float!("2*-2", -4.);
+        assert_parse_result_float!("1--1", 2.);
+        assert_parse_result_float!("-1*-1", 1.);
     }
 
     #[test]
     fn parse_unwrap_quotes() {
-        let expr: &str = "\"10-10\"";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 0.);
+        assert_parse_result_float!("\"10-10\"", 0.);
     }
+
     #[test]
     fn parse_unwrap_parenthesis_simple() {
-        let expr: &str = "(1+1)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 2.);
+        assert_parse_result_float!("(1+1)", 2.);
     }
     #[test]
     fn parse_unwrap_parenthesis_nested() {
-        let expr: &str = "(((1)+1)+(1+(1)))";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 4.);
-
-        let expr: &str = "(1+(1+(1+(1+(1+(1+(1)))))))";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 7.);
+        assert_parse_result_float!("(((1)+1)+(1+(1)))", 4.);
+        assert_parse_result_float!("(1+(1+(1+(1+(1+(1+(1)))))))", 7.);
     }
 
     #[test]
     fn parse_unwrap_parenthesis_missing_closing() {
-        let expr: &str = "(1+1";
-        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"(1+1\" in expression \"(1+1\": missing closing parenthesis, (1+1 <-- HERE");
-
-        let expr: &str = "(1+(1)";
-        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"(1+(1)\" in expression \"(1+(1)\": missing closing parenthesis, (1+(1) <-- HERE");
+        assert_parse_error!("(1+1", "error while parsing token \"(1+1\" in expression \"(1+1\": missing closing parenthesis, (1+1 <-- HERE");
+        assert_parse_error!("(1+(1)", "error while parsing token \"(1+(1)\" in expression \"(1+(1)\": missing closing parenthesis, (1+(1) <-- HERE");
     }
 
     #[test]
     fn parse_unwrap_parenthesis_missing_opening() {
-        let expr: &str = "1+1)";
-        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"1)\" in expression \"1+1)\": missing opening parenthesis, 1+1) <-- HERE");
-
-        let expr: &str = "(1+1))";
-        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"(1+1))\" in expression \"(1+1))\": missing opening parenthesis, (1+1)) <-- HERE");
+        assert_parse_error!("1+1)", "error while parsing token \"1)\" in expression \"1+1)\": missing opening parenthesis, 1+1) <-- HERE");
+        assert_parse_error!("(1+1))", "error while parsing token \"(1+1))\" in expression \"(1+1))\": missing opening parenthesis, (1+1)) <-- HERE");
     }
 
     #[test]
     fn parse_function_single_cos() {
-        let expr: &str = "cos(0)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 1.0);
-
-        let expr: &str = "cos(pi)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), -1.0);
+        assert_parse_result_float!("cos(0)", 1.0);
+        assert_parse_result_float!("cos(pi)", -1.0);
     }
 
     #[test]
     fn parse_function_single_sin() {
-        let expr: &str = "sin(0)";
-        assert!(parse(expr, expr, 0).unwrap().abs() < f64::EPSILON);
-
-        let expr: &str = "sin(pi)";
-        assert!(parse(expr, expr, 0).unwrap().abs() < f64::EPSILON);
+        assert_parse_result_float!("sin(0)", 0.0);
+        assert_parse_result_float!("sin(pi)", 0.0);
     }
 
     #[test]
     fn parse_function_single_tan() {
-        let expr: &str = "tan(0)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 0.0);
+        assert_parse_result_float!("tan(0)", 0.0);
     }
 
     #[test]
     fn parse_function_single_acos() {
-        let expr: &str = "acos(0)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), f64::consts::FRAC_PI_2);
+        assert_parse_result_float!("acos(0)", f64::consts::FRAC_PI_2);
     }
 
     #[test]
     fn parse_function_single_asin() {
-        let expr: &str = "asin(1)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), f64::consts::FRAC_PI_2);
+        assert_parse_result_float!("asin(1)", f64::consts::FRAC_PI_2);
     }
 
     #[test]
     fn parse_function_single_atan() {
-        let expr: &str = "atan(1)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), f64::consts::FRAC_PI_4);
+        assert_parse_result_float!("atan(1)", f64::consts::FRAC_PI_4);
     }
 
     #[test]
     fn parse_function_single_ln() {
-        let expr: &str = "ln(0)";
-        assert!(parse(expr, expr, 0).unwrap().is_infinite());
-
-        let expr: &str = "ln(1)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 0.0);
-
-        let expr: &str = "ln(e)";
-        assert_eq!(parse(expr, expr, 0).unwrap(), 1.0);
+        assert_parse_result_is!("ln(0)", is_infinite);
+        assert_parse_result_float!("ln(1)", 0.0);
+        assert_parse_result_float!("ln(e)", 1.0);
     }
 
     #[test]
     fn parse_function_unkown_name() {
-        let expr: &str = "test()";
-        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"test()\" in expression \"test()\": unkown function name \"test\", test() <-- HERE");
+        assert_parse_error!("test()", "error while parsing token \"test()\" in expression \"test()\": unkown function name \"test\", test() <-- HERE");
     }
 }

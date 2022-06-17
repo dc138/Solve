@@ -1,7 +1,8 @@
 use std::env;
 
-mod errors;
+#[macro_use]
 mod helpers;
+mod errors;
 mod math;
 mod parser;
 
