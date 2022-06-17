@@ -13,7 +13,7 @@ pub fn find_closing_parenthesis(expr: &str) -> Option<usize> {
         }
     }
 
-    return None;
+    None
 }
 
 pub fn is_function_call(expr: &str) -> Option<(&str, &str, usize)> {
@@ -31,7 +31,7 @@ pub fn is_function_call(expr: &str) -> Option<(&str, &str, usize)> {
         }
     }
 
-    return None;
+    None
 }
 
 #[cfg(test)]

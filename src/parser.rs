@@ -42,7 +42,7 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
         ));
     }
 
-    let first_char = expr.chars().nth(0).unwrap();
+    let first_char = expr.chars().next().unwrap();
     let last_char = expr.chars().last().unwrap();
 
     if first_char == '"' && last_char == '"' {
@@ -92,31 +92,27 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
             continue;
         } else if OPERATORS.contains_key(&c)
             && !((c == '+' || c == '-')
-                && (i != 0 && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap())))
-        {
-            if (OPERATORS.get(&c).unwrap() >= &split_precedence && split_char != ' ')
-                || split_char == ' '
-            {
-                split_char = c;
-                split_pos = i;
-                split_precedence = *OPERATORS.get(&c).unwrap();
-            }
+                && (i != 0 && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap()))) && ((OPERATORS.get(&c).unwrap() >= &split_precedence && split_char != ' ')
+                || split_char == ' ') {
+            split_char = c;
+            split_pos = i;
+            split_precedence = *OPERATORS.get(&c).unwrap();
         }
     }
 
     if split_char == ' ' {
         if let Ok(val) = expr.parse::<f64>() {
             dprintln!("float");
-            return Ok(val);
-        } else if CONSTANTS.contains_key(&expr) {
+            Ok(val)
+        } else if CONSTANTS.contains_key(expr) {
             dprintln!("math constant");
-            return Ok(*CONSTANTS.get(&expr).unwrap());
+            return Ok(*CONSTANTS.get(expr).unwrap());
         } else if let Some((name, args, pos)) = is_function_call(expr) {
             dprintln!("function call: {} {}", name, args);
 
-            match FUNCTIONS.get(&name) {
+            match FUNCTIONS.get(name) {
                 Some(1) => {
-                    return match name {
+                    match name {
                         "cos" => Ok(parse(args, full_expr, pos + 1)?.cos()),
                         "sin" => Ok(parse(args, full_expr, pos + 1)?.sin()),
                         "tan" => Ok(parse(args, full_expr, pos + 1)?.tan()),
@@ -140,19 +136,19 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
                 }
             }
         } else if last_char == ')' {
-            return Err(SyntaxError::new(
+            Err(SyntaxError::new(
                 expr.to_owned(),
                 full_expr.to_owned(),
                 "missing opening parenthesis".to_owned(),
                 offset + expr.len(),
-            ));
+            ))
         } else {
-            return Err(SyntaxError::new(
+            Err(SyntaxError::new(
                 expr.to_owned(),
                 full_expr.to_owned(),
                 "unkown token".to_owned(),
                 offset + expr.len(),
-            ));
+            ))
         }
     } else {
         let left = &expr[..split_pos];
@@ -190,7 +186,7 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
             parse(right, full_expr, offset + split_pos + 1)
         }?;
 
-        return match split_char {
+        match split_char {
             '+' => Ok(left + right),
             '-' => Ok(left - right),
             '*' => Ok(left * right),
@@ -202,7 +198,7 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
             }),
             '!' => Ok(math::fact(left)),
             _ => unreachable!(),
-        };
+        }
     }
 }
 
