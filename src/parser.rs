@@ -50,31 +50,13 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
         dprintln!("unwrap into {}", inner);
         return parse(inner, full_expr, offset + 1);
     } else if first_char == '(' {
-        let mut i: usize = 0;
-        let mut par_level: isize = 0;
-
-        'dowhile: loop {
-            par_level += match expr.chars().nth(i).unwrap() {
-                '(' => 1,
-                ')' => -1,
-                _ => 0,
-            };
-
-            i += 1;
-
-            if par_level == 0 {
-                break 'dowhile;
-            } else if i == expr.len() {
-                i = 0;
-                break 'dowhile;
+        if let Some(i) = find_closing_parenthesis(expr) {
+            if i == expr.len() - 1 {
+                let inner = &expr[1..expr.len() - 1];
+                dprintln!("unwrap into {}", inner);
+                return parse(inner, full_expr, offset + 1);
             }
-        }
-
-        if i == expr.len() {
-            let inner = &expr[1..expr.len() - 1];
-            dprintln!("unwrap into {}", inner);
-            return parse(inner, full_expr, offset + 1);
-        } else if i == 0 {
+        } else {
             return Err(SyntaxError::new(
                 expr.to_owned(),
                 full_expr.to_owned(),
