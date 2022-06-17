@@ -229,6 +229,12 @@ mod tests {
     use super::*;
 
     #[test]
+    fn parse_unkown_token() {
+        let expr: &str = "error";
+        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"error\" in expression \"error\": unkown token, error <-- HERE");
+    }
+
+    #[test]
     fn parse_float_simple() {
         let expr: &str = "1";
         assert_eq!(parse(expr, expr, 0).unwrap(), 1.);
@@ -353,5 +359,65 @@ mod tests {
 
         let expr: &str = "(1+1))";
         assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"(1+1))\" in expression \"(1+1))\": missing opening parenthesis, (1+1)) <-- HERE");
+    }
+
+    #[test]
+    fn parse_function_single_cos() {
+        let expr: &str = "cos(0)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 1.0);
+
+        let expr: &str = "cos(pi)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), -1.0);
+    }
+
+    #[test]
+    fn parse_function_single_sin() {
+        let expr: &str = "sin(0)";
+        assert!(parse(expr, expr, 0).unwrap().abs() < f64::EPSILON);
+
+        let expr: &str = "sin(pi)";
+        assert!(parse(expr, expr, 0).unwrap().abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn parse_function_single_tan() {
+        let expr: &str = "tan(0)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 0.0);
+    }
+
+    #[test]
+    fn parse_function_single_acos() {
+        let expr: &str = "acos(0)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), f64::consts::FRAC_PI_2);
+    }
+
+    #[test]
+    fn parse_function_single_asin() {
+        let expr: &str = "asin(1)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), f64::consts::FRAC_PI_2);
+    }
+
+    #[test]
+    fn parse_function_single_atan() {
+        let expr: &str = "atan(1)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), f64::consts::FRAC_PI_4);
+    }
+
+    #[test]
+    fn parse_function_single_ln() {
+        let expr: &str = "ln(0)";
+        assert!(parse(expr, expr, 0).unwrap().is_infinite());
+
+        let expr: &str = "ln(1)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 0.0);
+
+        let expr: &str = "ln(e)";
+        assert_eq!(parse(expr, expr, 0).unwrap(), 1.0);
+    }
+
+    #[test]
+    fn parse_function_unkown_name() {
+        let expr: &str = "test()";
+        assert_eq!(format!("{}", parse(expr, expr, 0).expect_err("")), "error while parsing token \"test()\" in expression \"test()\": unkown function name \"test\", test() <-- HERE");
     }
 }
