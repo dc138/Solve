@@ -283,6 +283,7 @@ mod tests {
     fn parse_unwrap_parenthesis_simple() {
         assert_parse_result_float!("(1+1)", 2.);
     }
+
     #[test]
     fn parse_unwrap_parenthesis_nested() {
         assert_parse_result_float!("(((1)+1)+(1+(1)))", 4.);
