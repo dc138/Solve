@@ -1,4 +1,4 @@
-pub fn is_function_call(expr: &str) -> bool {
+pub fn is_function_call(expr: &str) -> Option<(&str, &str, usize)> {
     for (i, c) in expr.chars().enumerate() {
         if c == '(' && i != 0 {
             let mut par_level = 0;
@@ -11,15 +11,19 @@ pub fn is_function_call(expr: &str) -> bool {
                 };
 
                 if par_level == 0 {
-                    return j + i == expr.len() - 1;
+                    return if i + j == expr.len() - 1 {
+                        Some((&expr[..i], &expr[i + 1..expr.len() - 1], i))
+                    } else {
+                        None
+                    };
                 }
             }
         } else if !c.is_alphabetic() {
-            return false;
+            return None;
         }
     }
 
-    return false;
+    return None;
 }
 
 #[cfg(test)]
@@ -28,11 +32,11 @@ mod tests {
 
     #[test]
     fn helpers_is_function_call() {
-        assert!(is_function_call("test(test)"));
-        assert!(is_function_call("test()"));
-        assert!(is_function_call("test((),())"));
-        assert!(!is_function_call("test"));
-        assert!(!is_function_call("test(test)a"));
-        assert!(!is_function_call("test()a"));
+        assert!(is_function_call("test(test)").is_some());
+        assert!(is_function_call("test()").is_some());
+        assert!(is_function_call("test((),())").is_some());
+        assert!(is_function_call("test").is_none());
+        assert!(is_function_call("test(test)a").is_none());
+        assert!(is_function_call("test()a").is_none());
     }
 }

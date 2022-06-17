@@ -20,6 +20,16 @@ static CONSTANTS: phf::Map<&str, f64> = phf_map! {
     "e" => f64::consts::E,
 };
 
+static FUNCTIONS: phf::Map<&str, usize> = phf_map! {
+    "cos" => 1,
+    "sin" => 1,
+    "tan" => 1,
+    "acos" => 1,
+    "asin" => 1,
+    "atan" => 1,
+    "ln" => 1,
+};
+
 pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxError> {
     dprint!("parse {} with ctx {} at {}: ", expr, full_expr, offset);
 
@@ -119,9 +129,34 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
         } else if CONSTANTS.contains_key(&expr) {
             dprintln!("math constant");
             return Ok(*CONSTANTS.get(&expr).unwrap());
-        } else if is_function_call(expr) {
-            dprintln!("function call");
-            unimplemented!();
+        } else if let Some((name, args, pos)) = is_function_call(expr) {
+            dprintln!("function call: {} {}", name, args);
+
+            match FUNCTIONS.get(&name) {
+                Some(1) => {
+                    return match name {
+                        "cos" => Ok(parse(args, full_expr, pos + 1)?.cos()),
+                        "sin" => Ok(parse(args, full_expr, pos + 1)?.sin()),
+                        "tan" => Ok(parse(args, full_expr, pos + 1)?.tan()),
+                        "acos" => Ok(parse(args, full_expr, pos + 1)?.acos()),
+                        "asin" => Ok(parse(args, full_expr, pos + 1)?.asin()),
+                        "atan" => Ok(parse(args, full_expr, pos + 1)?.atan()),
+                        "ln" => Ok(parse(args, full_expr, pos + 1)?.ln()),
+                        _ => unreachable!(),
+                    }
+                }
+                Some(_) => {
+                    unreachable!();
+                }
+                None => {
+                    return Err(SyntaxError::new(
+                        expr.to_owned(),
+                        full_expr.to_owned(),
+                        format!("unkown function name \"{}\"", name),
+                        offset + expr.len(),
+                    ));
+                }
+            }
         } else if last_char == ')' {
             return Err(SyntaxError::new(
                 expr.to_owned(),
@@ -184,7 +219,7 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
                 f64::powf(left, right)
             }),
             '!' => Ok(math::fact(left)),
-            _ => panic!("reached unexpected code block"),
+            _ => unreachable!(),
         };
     }
 }
