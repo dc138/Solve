@@ -115,20 +115,32 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
         } else if let Some((name, args, pos)) = is_function_call(expr) {
             dprintln!("function call: {} {}", name, args);
 
-            match FUNCTIONS.get(name) {
-                Some(1) => match name {
-                    "cos" => Ok(parse(args, full_expr, pos + 1)?.cos()),
-                    "sin" => Ok(parse(args, full_expr, pos + 1)?.sin()),
-                    "tan" => Ok(parse(args, full_expr, pos + 1)?.tan()),
-                    "acos" => Ok(parse(args, full_expr, pos + 1)?.acos()),
-                    "asin" => Ok(parse(args, full_expr, pos + 1)?.asin()),
-                    "atan" => Ok(parse(args, full_expr, pos + 1)?.atan()),
-                    "ln" => Ok(parse(args, full_expr, pos + 1)?.ln()),
-                    "sqrt" => Ok(parse(args, full_expr, pos + 1)?.sqrt()),
-                    _ => unreachable!(),
-                },
-                Some(2) => {
-                    if let Some(split) = find_nth_comma(args, 1) {
+            if let Some(expected_arg_num) = FUNCTIONS.get(name) {
+                let arg_num = count_args(args);
+
+                if arg_num != *expected_arg_num {
+                    return Err(SyntaxError::new(
+                            expr.to_owned(),
+                            full_expr.to_owned(),
+                            format!("incorrect number of arguments passed, function {} takes {} parameters but {} {} passed", name, expected_arg_num, arg_num, if arg_num == 1 {"was"} else {"were"}),
+                            offset + expr.len() - 1,
+                        ));
+                }
+
+                match arg_num {
+                    1 => match name {
+                        "cos" => Ok(parse(args, full_expr, pos + 1)?.cos()),
+                        "sin" => Ok(parse(args, full_expr, pos + 1)?.sin()),
+                        "tan" => Ok(parse(args, full_expr, pos + 1)?.tan()),
+                        "acos" => Ok(parse(args, full_expr, pos + 1)?.acos()),
+                        "asin" => Ok(parse(args, full_expr, pos + 1)?.asin()),
+                        "atan" => Ok(parse(args, full_expr, pos + 1)?.atan()),
+                        "ln" => Ok(parse(args, full_expr, pos + 1)?.ln()),
+                        "sqrt" => Ok(parse(args, full_expr, pos + 1)?.sqrt()),
+                        _ => unreachable!(),
+                    },
+                    2 => {
+                        let split = find_nth_comma(args, 1).unwrap();
                         let first = parse(&args[..split], full_expr, pos + 1)?;
                         let second = parse(&args[split + 1..], full_expr, pos + split + 2)?;
 
@@ -137,28 +149,16 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
                             "nroot" => Ok(f64::powf(second, 1. / first)),
                             _ => unreachable!(),
                         }
-                    } else {
-                        let arg_num = count_args(args);
-
-                        return Err(SyntaxError::new(
-                            expr.to_owned(),
-                            full_expr.to_owned(),
-                            format!("incorrect number of arguments passed, function {} takes 2 parameters but only {} {}", name, arg_num, if arg_num == 1 {"was passed"} else {"were passed"}),
-                            offset + expr.len() - 1,
-                        ));
                     }
+                    _ => unreachable!(),
                 }
-                Some(_) => {
-                    unreachable!();
-                }
-                None => {
-                    return Err(SyntaxError::new(
-                        expr.to_owned(),
-                        full_expr.to_owned(),
-                        format!("unkown function name \"{}\"", name),
-                        offset + expr.len(),
-                    ));
-                }
+            } else {
+                return Err(SyntaxError::new(
+                    expr.to_owned(),
+                    full_expr.to_owned(),
+                    format!("unkown function name \"{}\"", name),
+                    offset + expr.len(),
+                ));
             }
         } else if last_char == ')' {
             Err(SyntaxError::new(
@@ -394,7 +394,10 @@ mod tests {
 
     #[test]
     fn parse_function_argument_missmatch() {
-        assert_parse_error!("logab()", "error while parsing token \"logab()\" in expression \"logab()\": incorrect number of arguments passed, function logab takes 2 parameters but only 0 were passed, logab( <-- HERE");
-        assert_parse_error!("logab(1)", "error while parsing token \"logab(1)\" in expression \"logab(1)\": incorrect number of arguments passed, function logab takes 2 parameters but only 1 was passed, logab(1 <-- HERE");
+        assert_parse_error!("sqrt()", "error while parsing token \"sqrt()\" in expression \"sqrt()\": incorrect number of arguments passed, function sqrt takes 1 parameters but 0 were passed, sqrt( <-- HERE");
+        assert_parse_error!("sqrt(1,1)", "error while parsing token \"sqrt(1,1)\" in expression \"sqrt(1,1)\": incorrect number of arguments passed, function sqrt takes 1 parameters but 2 were passed, sqrt(1,1 <-- HERE");
+        assert_parse_error!("logab()", "error while parsing token \"logab()\" in expression \"logab()\": incorrect number of arguments passed, function logab takes 2 parameters but 0 were passed, logab( <-- HERE");
+        assert_parse_error!("logab(1)", "error while parsing token \"logab(1)\" in expression \"logab(1)\": incorrect number of arguments passed, function logab takes 2 parameters but 1 was passed, logab(1 <-- HERE");
+        assert_parse_error!("logab(1,1,1)", "error while parsing token \"logab(1,1,1)\" in expression \"logab(1,1,1)\": incorrect number of arguments passed, function logab takes 2 parameters but 3 were passed, logab(1,1,1 <-- HERE");
     }
 }
