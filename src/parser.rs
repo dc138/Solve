@@ -208,7 +208,16 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
                 ))
             }
         } else {
-            parse(right, full_expr, offset + split_pos + 1)
+            if split_char == '!' {
+                Err(SyntaxError::new(
+                    expr.to_owned(),
+                    full_expr.to_owned(),
+                    "unexpected token after operator \"!\"".to_owned(),
+                    offset + expr.len(),
+                ))
+            } else {
+                parse(right, full_expr, offset + split_pos + 1)
+            }
         }?;
 
         match split_char {
@@ -285,11 +294,32 @@ mod tests {
     }
 
     #[test]
+    fn parse_operator_factorial() {
+        assert_parse_result_is!("(-1)!", is_nan);
+        assert_parse_result_float!("0!", 1.);
+        assert_parse_result_float!("1!", 1.);
+        assert_parse_result_float!("2!", 2.);
+        assert_parse_result_float!("3!", 6.);
+        assert_parse_result_float!("4!", 24.);
+    }
+
+    #[test]
     fn parse_operator_precedence() {
         assert_parse_result_float!("1+2*3", 7.);
         assert_parse_result_float!("2*3-1", 5.);
         assert_parse_result_float!("1+4/2", 3.);
         assert_parse_result_float!("1^2/4", 0.25);
+    }
+
+    #[test]
+    fn parse_operator_expected_token() {
+        assert_parse_error!("1*", "error while parsing token \"1*\" in expression \"1*\": expected token after operator *, 1* <-- HERE");
+        assert_parse_error!("*1", "error while parsing token \"*1\" in expression \"*1\": expected token before operator *, *1 <-- HERE");
+    }
+
+    #[test]
+    fn parse_operator_unexpected_token() {
+        assert_parse_error!("1!1", "error while parsing token \"1!1\" in expression \"1!1\": unexpected token after operator \"!\", 1!1 <-- HERE");
     }
 
     #[test]
