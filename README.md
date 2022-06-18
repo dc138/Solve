@@ -1,7 +1,7 @@
 Expr
 ====
 
-A simple command line utility to parse mathematical expressions.
+A simple command line utility to parse mathematical expressions that correctly handles operator precedence, parenthesis and functions.
 
 Usage
 ------------
