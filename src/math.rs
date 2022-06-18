@@ -72,7 +72,7 @@ pub fn fact(x: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::fact;
 
     #[test]
     fn fact_negative() {

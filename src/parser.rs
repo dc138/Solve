@@ -241,60 +241,60 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_unkown_token() {
+    fn unkown_token() {
         assert_parse_error!("error", "error while parsing token \"error\" in expression \"error\": unkown token, error <-- HERE");
     }
 
     #[test]
-    fn parse_float_simple() {
+    fn float_simple() {
         assert_parse_result_float!("1", 1.0);
         assert_parse_result_float!("-5", -5.0);
     }
 
     #[test]
-    fn parse_float_decimals() {
+    fn float_decimals() {
         assert_parse_result_float!("1.", 1.0);
         assert_parse_result_float!(".1", 0.1);
         assert_parse_result_float!("1.1", 1.1);
     }
 
     #[test]
-    fn parse_float_nan() {
+    fn float_nan() {
         assert_parse_result_is!("nan", is_nan);
     }
 
     #[test]
-    fn parse_float_inf() {
+    fn float_inf() {
         assert_parse_result_is!("inf", is_infinite);
     }
 
     #[test]
-    fn parse_operator_sum() {
+    fn operator_sum() {
         assert_parse_result_float!("5+3", 8.);
     }
 
     #[test]
-    fn parse_operator_difference() {
+    fn operator_difference() {
         assert_parse_result_float!("1-1", 0.);
     }
 
     #[test]
-    fn parse_operator_product() {
+    fn operator_product() {
         assert_parse_result_float!("2*4", 8.);
     }
 
     #[test]
-    fn parse_operator_quotient() {
+    fn operator_quotient() {
         assert_parse_result_float!("10/2", 5.);
     }
 
     #[test]
-    fn parse_operator_exponent() {
+    fn operator_exponent() {
         assert_parse_result_float!("2^2", 4.);
     }
 
     #[test]
-    fn parse_operator_factorial() {
+    fn operator_factorial() {
         assert_parse_result_is!("(-1)!", is_nan);
         assert_parse_result_float!("0!", 1.);
         assert_parse_result_float!("1!", 1.);
@@ -304,7 +304,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_operator_precedence() {
+    fn operator_precedence() {
         assert_parse_result_float!("1+2*3", 7.);
         assert_parse_result_float!("2*3-1", 5.);
         assert_parse_result_float!("1+4/2", 3.);
@@ -312,92 +312,92 @@ mod tests {
     }
 
     #[test]
-    fn parse_operator_expected_token() {
+    fn operator_expected_token() {
         assert_parse_error!("1*", "error while parsing token \"1*\" in expression \"1*\": expected token after operator *, 1* <-- HERE");
         assert_parse_error!("*1", "error while parsing token \"*1\" in expression \"*1\": expected token before operator *, *1 <-- HERE");
     }
 
     #[test]
-    fn parse_operator_unexpected_token() {
+    fn operator_unexpected_token() {
         assert_parse_error!("1!1", "error while parsing token \"1!1\" in expression \"1!1\": unexpected token after operator \"!\", 1!1 <-- HERE");
     }
 
     #[test]
-    fn parse_implicit_operators() {
+    fn implicit_operators() {
         assert_parse_result_float!("2*-2", -4.);
         assert_parse_result_float!("1--1", 2.);
         assert_parse_result_float!("-1*-1", 1.);
     }
 
     #[test]
-    fn parse_unwrap_quotes() {
+    fn unwrap_quotes() {
         assert_parse_result_float!("\"10-10\"", 0.);
     }
 
     #[test]
-    fn parse_unwrap_parenthesis_simple() {
+    fn unwrap_parenthesis_simple() {
         assert_parse_result_float!("(1+1)", 2.);
     }
 
     #[test]
-    fn parse_unwrap_parenthesis_nested() {
+    fn unwrap_parenthesis_nested() {
         assert_parse_result_float!("(((1)+1)+(1+(1)))", 4.);
         assert_parse_result_float!("(1+(1+(1+(1+(1+(1+(1)))))))", 7.);
     }
 
     #[test]
-    fn parse_unwrap_parenthesis_missing_closing() {
+    fn unwrap_parenthesis_missing_closing() {
         assert_parse_error!("(1+1", "error while parsing token \"(1+1\" in expression \"(1+1\": missing closing parenthesis, (1+1 <-- HERE");
         assert_parse_error!("(1+(1)", "error while parsing token \"(1+(1)\" in expression \"(1+(1)\": missing closing parenthesis, (1+(1) <-- HERE");
     }
 
     #[test]
-    fn parse_unwrap_parenthesis_missing_opening() {
+    fn unwrap_parenthesis_missing_opening() {
         assert_parse_error!("1+1)", "error while parsing token \"1)\" in expression \"1+1)\": missing opening parenthesis, 1+1) <-- HERE");
         assert_parse_error!("(1+1))", "error while parsing token \"(1+1))\" in expression \"(1+1))\": missing opening parenthesis, (1+1)) <-- HERE");
     }
 
     #[test]
-    fn parse_function_single_cos() {
+    fn function_single_cos() {
         assert_parse_result_float!("cos(0)", 1.0);
         assert_parse_result_float!("cos(pi)", -1.0);
     }
 
     #[test]
-    fn parse_function_single_sin() {
+    fn function_single_sin() {
         assert_parse_result_float!("sin(0)", 0.0);
         assert_parse_result_float!("sin(pi)", 0.0);
     }
 
     #[test]
-    fn parse_function_single_tan() {
+    fn function_single_tan() {
         assert_parse_result_float!("tan(0)", 0.0);
     }
 
     #[test]
-    fn parse_function_single_acos() {
+    fn function_single_acos() {
         assert_parse_result_float!("acos(0)", f64::consts::FRAC_PI_2);
     }
 
     #[test]
-    fn parse_function_single_asin() {
+    fn function_single_asin() {
         assert_parse_result_float!("asin(1)", f64::consts::FRAC_PI_2);
     }
 
     #[test]
-    fn parse_function_single_atan() {
+    fn function_single_atan() {
         assert_parse_result_float!("atan(1)", f64::consts::FRAC_PI_4);
     }
 
     #[test]
-    fn parse_function_single_ln() {
+    fn function_single_ln() {
         assert_parse_result_is!("ln(0)", is_infinite);
         assert_parse_result_float!("ln(1)", 0.0);
         assert_parse_result_float!("ln(e)", 1.0);
     }
 
     #[test]
-    fn parse_function_single_sqrt() {
+    fn function_single_sqrt() {
         assert_parse_result_float!("sqrt(9)", 3.);
         assert_parse_result_float!("sqrt(4)", 2.);
         assert_parse_result_float!("sqrt(0)", 0.);
@@ -405,25 +405,25 @@ mod tests {
     }
 
     #[test]
-    fn parse_function_two_logab() {
+    fn function_two_logab() {
         assert_parse_result_float!("logab(2,16)", 4.);
         assert_parse_result_float!("logab(3,9)", 2.);
         assert_parse_result_is!("logab(1,1)", is_nan);
     }
 
     #[test]
-    fn parse_function_two_nroot() {
+    fn function_two_nroot() {
         assert_parse_result_float!("nroot(3,8)", 2.);
         assert_parse_result_float!("nroot(4,16)", 2.);
     }
 
     #[test]
-    fn parse_function_unkown_name() {
+    fn function_unkown_name() {
         assert_parse_error!("test()", "error while parsing token \"test()\" in expression \"test()\": unkown function name \"test\", test() <-- HERE");
     }
 
     #[test]
-    fn parse_function_argument_missmatch() {
+    fn function_argument_missmatch() {
         assert_parse_error!("sqrt()", "error while parsing token \"sqrt()\" in expression \"sqrt()\": incorrect number of arguments passed, function sqrt takes 1 parameters but 0 were passed, sqrt( <-- HERE");
         assert_parse_error!("sqrt(1,1)", "error while parsing token \"sqrt(1,1)\" in expression \"sqrt(1,1)\": incorrect number of arguments passed, function sqrt takes 1 parameters but 2 were passed, sqrt(1,1 <-- HERE");
         assert_parse_error!("logab()", "error while parsing token \"logab()\" in expression \"logab()\": incorrect number of arguments passed, function logab takes 2 parameters but 0 were passed, logab( <-- HERE");

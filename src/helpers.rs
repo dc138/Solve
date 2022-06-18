@@ -123,10 +123,10 @@ macro_rules! assert_parse_error {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{count_args, find_closing_parenthesis, find_nth_comma, is_function_call};
 
     #[test]
-    fn helpers_find_closing_parenthesis() {
+    fn find_closing_parenthesis_simple() {
         assert_eq!(find_closing_parenthesis("(test)").unwrap(), 5);
         assert_eq!(find_closing_parenthesis("()").unwrap(), 1);
         assert!(find_closing_parenthesis("(test").is_none());
@@ -134,7 +134,7 @@ mod tests {
     }
 
     #[test]
-    fn helpers_is_function_call() {
+    fn is_function_call_simple() {
         assert!(is_function_call("test(test)").is_some());
         assert!(is_function_call("test()").is_some());
         assert!(is_function_call("test((),())").is_some());
@@ -144,7 +144,7 @@ mod tests {
     }
 
     #[test]
-    fn helpers_find_nth_comma() {
+    fn find_nth_comma_simple() {
         assert_eq!(find_nth_comma("1,2,3", 1).unwrap(), 1);
         assert_eq!(find_nth_comma("1,2,3", 2).unwrap(), 3);
         assert!(find_nth_comma("1,2,3", 3).is_none());
@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[test]
-    fn helpers_count_commas() {
+    fn count_args_simple() {
         assert_eq!(count_args("1,2,3"), 3);
         assert_eq!(count_args("1,2"), 2);
         assert_eq!(count_args("1"), 1);
