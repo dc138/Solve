@@ -38,7 +38,7 @@ pub fn find_nth_comma(expr: &str, n: usize) -> Option<usize> {
     let mut i: usize = 0;
     let mut c: usize = 0;
 
-    if expr.len() == 0 {
+    if expr.is_empty() {
         return None;
     }
 
@@ -73,7 +73,7 @@ pub fn count_args(expr: &str) -> usize {
     let mut i: usize = 0;
     let mut c: usize = 0;
 
-    if expr.len() == 0 {
+    if expr.is_empty() {
         return 0;
     }
 

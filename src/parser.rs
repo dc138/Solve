@@ -367,7 +367,34 @@ mod tests {
     }
 
     #[test]
+    fn parse_function_single_sqrt() {
+        assert_parse_result_float!("sqrt(9)", 3.);
+        assert_parse_result_float!("sqrt(4)", 2.);
+        assert_parse_result_float!("sqrt(0)", 0.);
+        assert_parse_result_is!("sqrt(-1)", is_nan);
+    }
+
+    #[test]
+    fn parse_function_two_logab() {
+        assert_parse_result_float!("logab(2,16)", 4.);
+        assert_parse_result_float!("logab(3,9)", 2.);
+        assert_parse_result_is!("logab(1,1)", is_nan);
+    }
+
+    #[test]
+    fn parse_function_two_nroot() {
+        assert_parse_result_float!("nroot(3,8)", 2.);
+        assert_parse_result_float!("nroot(4,16)", 2.);
+    }
+
+    #[test]
     fn parse_function_unkown_name() {
         assert_parse_error!("test()", "error while parsing token \"test()\" in expression \"test()\": unkown function name \"test\", test() <-- HERE");
+    }
+
+    #[test]
+    fn parse_function_argument_missmatch() {
+        assert_parse_error!("logab()", "error while parsing token \"logab()\" in expression \"logab()\": incorrect number of arguments passed, function logab takes 2 parameters but only 0 were passed, logab( <-- HERE");
+        assert_parse_error!("logab(1)", "error while parsing token \"logab(1)\" in expression \"logab(1)\": incorrect number of arguments passed, function logab takes 2 parameters but only 1 was passed, logab(1 <-- HERE");
     }
 }
