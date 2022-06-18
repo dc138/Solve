@@ -28,6 +28,9 @@ static FUNCTIONS: phf::Map<&str, usize> = phf_map! {
     "asin" => 1,
     "atan" => 1,
     "ln" => 1,
+    "logab" => 2,
+    "sqrt" => 1,
+    "nroot" => 2,
 };
 
 pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxError> {
@@ -121,8 +124,30 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
                     "asin" => Ok(parse(args, full_expr, pos + 1)?.asin()),
                     "atan" => Ok(parse(args, full_expr, pos + 1)?.atan()),
                     "ln" => Ok(parse(args, full_expr, pos + 1)?.ln()),
+                    "sqrt" => Ok(parse(args, full_expr, pos + 1)?.sqrt()),
                     _ => unreachable!(),
                 },
+                Some(2) => {
+                    if let Some(split) = find_nth_comma(args, 1) {
+                        let first = parse(&args[..split], full_expr, pos + 1)?;
+                        let second = parse(&args[split + 1..], full_expr, pos + split + 2)?;
+
+                        match name {
+                            "logab" => Ok(second.ln() / first.ln()), // log_a(b) = ln b / ln a
+                            "nroot" => Ok(f64::powf(second, 1. / first)),
+                            _ => unreachable!(),
+                        }
+                    } else {
+                        let arg_num = count_args(args);
+
+                        return Err(SyntaxError::new(
+                            expr.to_owned(),
+                            full_expr.to_owned(),
+                            format!("incorrect number of arguments passed, function {} takes 2 parameters but only {} {}", name, arg_num, if arg_num == 1 {"was passed"} else {"were passed"}),
+                            offset + expr.len() - 1,
+                        ));
+                    }
+                }
                 Some(_) => {
                     unreachable!();
                 }
@@ -191,7 +216,7 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
             '-' => Ok(left - right),
             '*' => Ok(left * right),
             '/' => Ok(left / right),
-            '^' => Ok(if (left + right) < f64::EPSILON {
+            '^' => Ok(if (left + right).abs() < f64::EPSILON {
                 f64::NAN
             } else {
                 f64::powf(left, right)

@@ -34,6 +34,72 @@ pub fn is_function_call(expr: &str) -> Option<(&str, &str, usize)> {
     None
 }
 
+pub fn find_nth_comma(expr: &str, n: usize) -> Option<usize> {
+    let mut i: usize = 0;
+    let mut c: usize = 0;
+
+    if expr.len() == 0 {
+        return None;
+    }
+
+    loop {
+        match expr.chars().nth(i).unwrap() {
+            ',' => {
+                c += 1;
+            }
+            '(' => {
+                if let Some(j) = find_closing_parenthesis(&expr[i..]) {
+                    i += j;
+                }
+            }
+            _ => {}
+        };
+
+        if n == c {
+            return Some(i);
+        }
+
+        if i == expr.len() - 1 {
+            break;
+        } else {
+            i += 1;
+        }
+    }
+
+    None
+}
+
+pub fn count_args(expr: &str) -> usize {
+    let mut i: usize = 0;
+    let mut c: usize = 0;
+
+    if expr.len() == 0 {
+        return 0;
+    }
+
+    loop {
+        match expr.chars().nth(i).unwrap() {
+            ',' => {
+                c += 1;
+            }
+            '(' => {
+                if let Some(j) = find_closing_parenthesis(&expr[i..]) {
+                    i += j;
+                }
+            }
+            _ => {}
+        };
+
+        if i == expr.len() - 1 {
+            break;
+        } else {
+            i += 1;
+        }
+    }
+
+    c + 1
+}
+
 #[macro_export]
 macro_rules! assert_parse_result_float {
     ($x:expr, $y:expr) => {
@@ -75,5 +141,25 @@ mod tests {
         assert!(is_function_call("test").is_none());
         assert!(is_function_call("test(test)a").is_none());
         assert!(is_function_call("test()a").is_none());
+    }
+
+    #[test]
+    fn helpers_find_nth_comma() {
+        assert_eq!(find_nth_comma("1,2,3", 1).unwrap(), 1);
+        assert_eq!(find_nth_comma("1,2,3", 2).unwrap(), 3);
+        assert!(find_nth_comma("1,2,3", 3).is_none());
+        assert!(find_nth_comma("", 1).is_none());
+        assert_eq!(find_nth_comma("1,(1,2),3", 1).unwrap(), 1);
+        assert_eq!(find_nth_comma("1,(1,2),3", 2).unwrap(), 7);
+    }
+
+    #[test]
+    fn helpers_count_commas() {
+        assert_eq!(count_args("1,2,3"), 3);
+        assert_eq!(count_args("1,2"), 2);
+        assert_eq!(count_args("1"), 1);
+        assert_eq!(count_args(""), 0);
+        assert_eq!(count_args("1,(1,2),3"), 3);
+        assert_eq!(count_args("(1,2)"), 1);
     }
 }
