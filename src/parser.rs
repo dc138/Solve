@@ -7,12 +7,12 @@ use crate::helpers::*;
 use crate::math;
 
 static OPERATORS: phf::Map<char, usize> = phf_map! {
-    '+' => 3,
-    '-' => 3,
-    '*' => 2,
-    '/' => 2,
-    '^' => 1,
-    '!' => 0,
+    '+' => 0,
+    '-' => 0,
+    '*' => 1,
+    '/' => 1,
+    '^' => 2,
+    '!' => 3,
 };
 
 static CONSTANTS: phf::Map<&str, f64> = phf_map! {
@@ -96,7 +96,7 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
         } else if OPERATORS.contains_key(&c)
             && !((c == '+' || c == '-')
                 && (i != 0 && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap())))
-            && ((OPERATORS.get(&c).unwrap() >= &split_precedence && split_char != ' ')
+            && ((OPERATORS.get(&c).unwrap() <= &split_precedence && split_char != ' ')
                 || split_char == ' ')
         {
             split_char = c;
