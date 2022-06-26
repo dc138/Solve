@@ -12,8 +12,8 @@ static OPERATORS: phf::Map<char, usize> = phf_map! {
     '*' => 1,
     '/' => 1,
     '^' => 2,
-    '!' => 3,
-    '%' => 4,
+    '%' => 3,
+    '!' => 4,
 };
 
 static CONSTANTS: phf::Map<&str, f64> = phf_map! {
@@ -95,14 +95,18 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
 
             continue;
         } else if OPERATORS.contains_key(&c)
-            && !((c == '+' || c == '-')
-                && (i != 0 && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap())))
             && ((OPERATORS.get(&c).unwrap() <= &split_precedence && split_char != ' ')
                 || split_char == ' ')
         {
-            split_char = c;
-            split_pos = i;
-            split_precedence = *OPERATORS.get(&c).unwrap();
+            if !((c == '+' || c == '-')
+                && (i != 0
+                    && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap())
+                    && expr.chars().nth(i - 1).unwrap() != '!'))
+            {
+                split_char = c;
+                split_pos = i;
+                split_precedence = *OPERATORS.get(&c).unwrap();
+            }
         }
     }
 
