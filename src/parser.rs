@@ -13,6 +13,7 @@ static OPERATORS: phf::Map<char, usize> = phf_map! {
     '/' => 1,
     '^' => 2,
     '!' => 3,
+    '%' => 4,
 };
 
 static CONSTANTS: phf::Map<&str, f64> = phf_map! {
@@ -231,6 +232,7 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
                 f64::powf(left, right)
             }),
             '!' => Ok(math::fact(left)),
+            '%' => Ok(left % right),
             _ => unreachable!(),
         }
     }
@@ -291,6 +293,13 @@ mod tests {
     #[test]
     fn operator_exponent() {
         assert_parse_result_float!("2^2", 4.);
+    }
+
+    #[test]
+    fn operator_modulo() {
+        assert_parse_result_float!("5%5", 0.);
+        assert_parse_result_float!("10%5", 0.);
+        assert_parse_result_float!("11%5", 1.);
     }
 
     #[test]
