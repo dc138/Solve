@@ -10,7 +10,7 @@ use parser::*;
 
 fn main() {
     if env::args().len() < 2 {
-        println!("Incorrect usage, please do expr <expr> [<expr>...]");
+        println!("Incorrect usage, please use \"so <expression> [<expression>...]\"");
         std::process::exit(1);
     }
 

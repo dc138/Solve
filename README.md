@@ -1,5 +1,5 @@
-Expr
-====
+Solve
+=====
 
 A simple command line utility to parse mathematical expressions that correctly handles operator precedence, parenthesis and functions.
 
@@ -9,16 +9,16 @@ Usage
 To evaluate an expression, simply pass it as arguments:
 
 ```bash
-  expr <expression> [<expression>...]
+  so <expression> [<expression>...]
 ```
 
-For example, the invoking `expr 1+1` will output `2`. Arguments are concatenated when evaluating the expression, thus ignoring spaces in between them. As a result, one could also write `expr 1 + 1`. Note that all operations are done on double precission floats (`f64`).
+For example, the invoking `so 1+1` will output `2`. Arguments are concatenated when evaluating the expression, thus ignoring spaces in between them. As a result, one could also write `so 1 + 1`. Note that all operations are done on double precission floats (`f64`).
 
-`expr` supports all basic math **operators**: addition (`+`), subtraction (`-`), multiplication (`*`), division (`/`) and exponentiation (`^`). Operator precedence is maintained while parsing an expression. For example, `expr 1+2*3` will evaluate `2*3` before `1` adding it to it.
+`Solve` supports all basic math **operators**: addition (`+`), subtraction (`-`), multiplication (`*`), division (`/`) and exponentiation (`^`). Operator precedence is maintained while parsing an expression. For example, `so 1+2*3` will evaluate `2*3` before `1` adding it to it.
 
-One can also use **parenthesis** in an expression to change the normal operator precedence. Evaluation of tokens inside parenthesis will take place before all other tokens on the same level are evaluated. For example, `expr (1+2)*3` will evaluate the sum before the product.
+One can also use **parenthesis** in an expression to change the normal operator precedence. Evaluation of tokens inside parenthesis will take place before all other tokens on the same level are evaluated. For example, `so (1+2)*3` will evaluate the sum before the product.
 
-`expr` currently recognizes both `pi` and `e` as math constants, and will parse them correctly.
+`Solve` currently recognizes both `pi` and `e` as math constants, and will parse them correctly.
 
 License
 -------
