@@ -96,17 +96,13 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
             continue;
         } else if OPERATORS.contains_key(&c)
             && ((OPERATORS.get(&c).unwrap() <= &split_precedence && split_char != ' ')
-                || split_char == ' ')
-        {
-            if !((c == '+' || c == '-')
+                || split_char == ' ') && !((c == '+' || c == '-')
                 && (i != 0
                     && OPERATORS.contains_key(&expr.chars().nth(i - 1).unwrap())
-                    && expr.chars().nth(i - 1).unwrap() != '!'))
-            {
-                split_char = c;
-                split_pos = i;
-                split_precedence = *OPERATORS.get(&c).unwrap();
-            }
+                    && expr.chars().nth(i - 1).unwrap() != '!')) {
+            split_char = c;
+            split_pos = i;
+            split_precedence = *OPERATORS.get(&c).unwrap();
         }
     }
 
@@ -212,17 +208,15 @@ pub fn parse(expr: &str, full_expr: &str, offset: usize) -> Result<f64, SyntaxEr
                     offset + expr.len(),
                 ))
             }
+        } else if split_char == '!' {
+            Err(SyntaxError::new(
+                expr.to_owned(),
+                full_expr.to_owned(),
+                "unexpected token after operator \"!\"".to_owned(),
+                offset + expr.len(),
+            ))
         } else {
-            if split_char == '!' {
-                Err(SyntaxError::new(
-                    expr.to_owned(),
-                    full_expr.to_owned(),
-                    "unexpected token after operator \"!\"".to_owned(),
-                    offset + expr.len(),
-                ))
-            } else {
-                parse(right, full_expr, offset + split_pos + 1)
-            }
+            parse(right, full_expr, offset + split_pos + 1)
         }?;
 
         match split_char {

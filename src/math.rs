@@ -83,16 +83,16 @@ mod tests {
 
     #[test]
     fn fact_zero() {
-        assert_eq!(fact(0.), 1.);
+        assert!((fact(0.) - 1.).abs() < f64::EPSILON);
     }
 
     #[test]
     fn fact_positive_integer() {
-        assert_eq!(fact(1.), 1.);
-        assert_eq!(fact(2.), 2.);
-        assert_eq!(fact(3.), 6.);
-        assert_eq!(fact(4.), 24.);
-        assert_eq!(fact(5.), 120.);
+        assert!((fact(1.) - 1.).abs() < f64::EPSILON);
+        assert!((fact(2.) - 2.).abs() < f64::EPSILON);
+        assert!((fact(3.) - 6.).abs() < f64::EPSILON);
+        assert!((fact(4.) - 24.).abs() < f64::EPSILON);
+        assert!((fact(5.) - 120.).abs() < f64::EPSILON);
     }
 
     #[test]
